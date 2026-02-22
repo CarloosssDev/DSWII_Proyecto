@@ -25,16 +25,19 @@ public class Cliente {
 
 	private String direccion;
 
+	private Boolean activo = true;
+
 	@OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
 	private List<Pedido> pedidos;
 
 	public Cliente() {
 	}
 
-	public Cliente(String nombre, String telefono, String direccion, List<Pedido> pedidos) {
+	public Cliente(String nombre, String telefono, String direccion, Boolean activo, List<Pedido> pedidos) {
 		this.nombre = nombre;
 		this.telefono = telefono;
 		this.direccion = direccion;
+		this.activo = activo;
 		this.pedidos = pedidos;
 	}
 
@@ -54,6 +57,14 @@ public class Cliente {
 		this.nombre = nombre;
 	}
 
+	public String getTelefono() {
+		return telefono;
+	}
+
+	public void setTelefono(String telefono) {
+		this.telefono = telefono;
+	}
+
 	public String getDireccion() {
 		return direccion;
 	}
@@ -62,12 +73,12 @@ public class Cliente {
 		this.direccion = direccion;
 	}
 
-	public String getTelefono() {
-		return telefono;
+	public Boolean isActivo() {
+		return activo;
 	}
 
-	public void setTelefono(String telefono) {
-		this.telefono = telefono;
+	public void setActivo(Boolean activo) {
+		this.activo = activo;
 	}
 
 }

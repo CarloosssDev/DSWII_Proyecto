@@ -16,6 +16,8 @@ public class Repartidor {
 
 	private String apellido;
 
+	private Boolean activo = true;
+
 	@OneToMany(mappedBy = "repartidor")
 	@XmlTransient
 	private List<Pedido> pedidos;
@@ -52,11 +54,11 @@ public class Repartidor {
 		this.apellido = apellido;
 	}
 
-	public List<Pedido> getPedidos() {
-		return pedidos;
+	public Boolean isActivo() {
+		return activo;
 	}
 
-	public void setPedidos(List<Pedido> pedidos) {
-		this.pedidos = pedidos;
+	public void setActivo(Boolean activo) {
+		this.activo = activo;
 	}
 }

@@ -33,7 +33,7 @@ public class GestionPedidoImplement implements IGestionPedidoService {
 
 	@Override
 	public List<Cliente> listarClientes() {
-		return clienteRepo.findAll();
+		return clienteRepo.findAllByActivoTrue();
 	}
 
 	@Override
@@ -71,14 +71,15 @@ public class GestionPedidoImplement implements IGestionPedidoService {
 		Cliente c = clienteRepo.findById(id).orElseThrow(
 				() -> new RuntimeException("No se pudo eliminar: El cliente con ID " + id + " no existe."));
 
-		clienteRepo.delete(c);
+		c.setActivo(false);
+		clienteRepo.save(c);
 
 		return "Cliente con ID " + id + " eliminado correctamente";
 	}
 
 	@Override
 	public List<Producto> listarProductos() {
-		return productoRepo.findAll();
+		return productoRepo.findAllByActivoTrue();
 	}
 
 	@Override
@@ -104,7 +105,9 @@ public class GestionPedidoImplement implements IGestionPedidoService {
 	public String eliminarProducto(Long id) {
 		Optional<Producto> productoOptional = productoRepo.findById(id);
 		if (productoOptional.isPresent()) {
-			productoRepo.deleteById(id);
+			Producto productoExistente = productoOptional.get();
+			productoExistente.setActivo(false);
+			productoRepo.save(productoExistente);
 			return "Producto eliminado correctamente";
 		} else {
 			return "Producto no encontrado";
@@ -113,12 +116,12 @@ public class GestionPedidoImplement implements IGestionPedidoService {
 
 	@Override
 	public Optional<Producto> buscarProducto(Long id) {
-		return productoRepo.findById(id);
+		return productoRepo.findById(id).stream().filter(Producto::isActivo).findFirst();
 	}
 
 	@Override
 	public List<Repartidor> listarRepartidores() {
-		return repartidorRepo.findAll();
+		return repartidorRepo.findAllByActivoTrue();
 	}
 
 	@Override
@@ -175,21 +178,21 @@ public class GestionPedidoImplement implements IGestionPedidoService {
 
 	@Override
 	public List<PedidoResponse> listarPedidos() {
-	      List<Pedido> pedidos = pedidoRepo.findAll();
-	        List<PedidoResponse> responseList = new ArrayList<>();
+		List<Pedido> pedidos = pedidoRepo.findAll();
+		List<PedidoResponse> responseList = new ArrayList<>();
 
-	        for (Pedido pedido : pedidos) {
-	        	
-	            List<DetallePedidoResponse> detallesResponse = new ArrayList<>();
-	            for (DetallePedido det : pedido.getDetalles()) {
-	                detallesResponse.add(detalleMapper.toResponse(det));
-	            }
+		for (Pedido pedido : pedidos) {
 
-	            responseList.add(pedidoMapper.toResponse(
-	                    pedido,
-	                    detallesResponse));
-	        }
-	        return responseList;
+			List<DetallePedidoResponse> detallesResponse = new ArrayList<>();
+			for (DetallePedido det : pedido.getDetalles()) {
+				detallesResponse.add(detalleMapper.toResponse(det));
+			}
+
+			responseList.add(pedidoMapper.toResponse(
+					pedido,
+					detallesResponse));
+		}
+		return responseList;
 	}
 
 	@Override
@@ -209,88 +212,89 @@ public class GestionPedidoImplement implements IGestionPedidoService {
 
 	@Override
 	public PedidoResponse cambiarEstado(Long id, EstadoPedido nuevoEstado) {
-	       Pedido pedido = pedidoRepo.findById(id).orElse(null);
-	        if (pedido == null) {
-	            throw new RuntimeException("Pedido no encontrado");
-	        }
-	        pedido.setEstado(nuevoEstado);
-			List<DetallePedidoResponse> detallesResponse = new ArrayList<>();
-			for (DetallePedido det : pedido.getDetalles()) {
-				detallesResponse.add(detalleMapper.toResponse(det));
-			}
-	        var pedidoSave = pedidoRepo.save(pedido);
-			return pedidoMapper.toResponse(pedidoSave, detallesResponse);
-	}
-
-	@Override
-	public PedidoResponse registrarPagoFinal(Long id, MetodoPago pago) {
-        Pedido pedido = pedidoRepo.findById(id).orElse(null);
-        if (pedido == null) {
-            throw new RuntimeException("Pedido no encontrado");
-        }
-        pedido.setMetodoPago(pago);
+		Pedido pedido = pedidoRepo.findById(id).orElse(null);
+		if (pedido == null) {
+			throw new RuntimeException("Pedido no encontrado");
+		}
+		pedido.setEstado(nuevoEstado);
 		List<DetallePedidoResponse> detallesResponse = new ArrayList<>();
 		for (DetallePedido det : pedido.getDetalles()) {
 			detallesResponse.add(detalleMapper.toResponse(det));
 		}
-        var pedidoSave = pedidoRepo.save(pedido);
-		return pedidoMapper.toResponse(pedidoSave, detallesResponse);	}
+		var pedidoSave = pedidoRepo.save(pedido);
+		return pedidoMapper.toResponse(pedidoSave, detallesResponse);
+	}
+
+	@Override
+	public PedidoResponse registrarPagoFinal(Long id, MetodoPago pago) {
+		Pedido pedido = pedidoRepo.findById(id).orElse(null);
+		if (pedido == null) {
+			throw new RuntimeException("Pedido no encontrado");
+		}
+		pedido.setMetodoPago(pago);
+		List<DetallePedidoResponse> detallesResponse = new ArrayList<>();
+		for (DetallePedido det : pedido.getDetalles()) {
+			detallesResponse.add(detalleMapper.toResponse(det));
+		}
+		var pedidoSave = pedidoRepo.save(pedido);
+		return pedidoMapper.toResponse(pedidoSave, detallesResponse);
+	}
 
 	@Override
 	public List<PedidoResponse> listarPorEstado(EstadoPedido estado) {
-	      List<Pedido> pedidos = pedidoRepo.findByEstado(estado);
-	        List<PedidoResponse> responseList = new ArrayList<>();
+		List<Pedido> pedidos = pedidoRepo.findByEstado(estado);
+		List<PedidoResponse> responseList = new ArrayList<>();
 
-	        for (Pedido pedido : pedidos) {
-	        	
-	            List<DetallePedidoResponse> detallesResponse = new ArrayList<>();
-	            for (DetallePedido det : pedido.getDetalles()) {
-	                detallesResponse.add(detalleMapper.toResponse(det));
-	            }
+		for (Pedido pedido : pedidos) {
 
-	            responseList.add(pedidoMapper.toResponse(
-	                    pedido,
-	                    detallesResponse));
-	        }
-	        return responseList;
+			List<DetallePedidoResponse> detallesResponse = new ArrayList<>();
+			for (DetallePedido det : pedido.getDetalles()) {
+				detallesResponse.add(detalleMapper.toResponse(det));
+			}
+
+			responseList.add(pedidoMapper.toResponse(
+					pedido,
+					detallesResponse));
+		}
+		return responseList;
 	}
 
 	@Override
 	public List<PedidoResponse> listarPorRepartidor(Long idRepartidor) {
-	      List<Pedido> pedidos = pedidoRepo.findByRepartidorId(idRepartidor);
-	        List<PedidoResponse> responseList = new ArrayList<>();
+		List<Pedido> pedidos = pedidoRepo.findByRepartidorId(idRepartidor);
+		List<PedidoResponse> responseList = new ArrayList<>();
 
-	        for (Pedido pedido : pedidos) {
-	        	
-	            List<DetallePedidoResponse> detallesResponse = new ArrayList<>();
-	            for (DetallePedido det : pedido.getDetalles()) {
-	                detallesResponse.add(detalleMapper.toResponse(det));
-	            }
+		for (Pedido pedido : pedidos) {
 
-	            responseList.add(pedidoMapper.toResponse(
-	                    pedido,
-	                    detallesResponse));
-	        }
-	        return responseList;
+			List<DetallePedidoResponse> detallesResponse = new ArrayList<>();
+			for (DetallePedido det : pedido.getDetalles()) {
+				detallesResponse.add(detalleMapper.toResponse(det));
+			}
+
+			responseList.add(pedidoMapper.toResponse(
+					pedido,
+					detallesResponse));
+		}
+		return responseList;
 	}
 
 	@Override
 	public List<PedidoResponse> listarPorCliente(String telefono) {
-	      List<Pedido> pedidos = pedidoRepo.findByClienteTelefono(telefono);
-	        List<PedidoResponse> responseList = new ArrayList<>();
+		List<Pedido> pedidos = pedidoRepo.findByClienteTelefono(telefono);
+		List<PedidoResponse> responseList = new ArrayList<>();
 
-	        for (Pedido pedido : pedidos) {
-	        	
-	            List<DetallePedidoResponse> detallesResponse = new ArrayList<>();
-	            for (DetallePedido det : pedido.getDetalles()) {
-	                detallesResponse.add(detalleMapper.toResponse(det));
-	            }
+		for (Pedido pedido : pedidos) {
 
-	            responseList.add(pedidoMapper.toResponse(
-	                    pedido,
-	                    detallesResponse));
-	        }
-	        return responseList;
+			List<DetallePedidoResponse> detallesResponse = new ArrayList<>();
+			for (DetallePedido det : pedido.getDetalles()) {
+				detallesResponse.add(detalleMapper.toResponse(det));
+			}
+
+			responseList.add(pedidoMapper.toResponse(
+					pedido,
+					detallesResponse));
+		}
+		return responseList;
 	}
 
 }

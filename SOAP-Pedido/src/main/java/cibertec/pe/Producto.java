@@ -15,6 +15,8 @@ public class Producto {
 
 	private double precio;
 
+	private boolean activo = true;
+
 	public Producto() {
 	}
 
@@ -48,5 +50,13 @@ public class Producto {
 
 	public void setPrecio(double precio) {
 		this.precio = precio;
+	}
+
+	public boolean isActivo() {
+		return activo;
+	}
+
+	public void setActivo(boolean activo) {
+		this.activo = activo;
 	}
 }
