@@ -3,6 +3,7 @@ package cibertec.pe;
 import java.util.List;
 
 import jakarta.persistence.*;
+import jakarta.xml.bind.annotation.XmlTransient;
 
 @Entity
 @Table(name = "tbl_repartidores")
@@ -16,6 +17,7 @@ public class Repartidor {
 	private String apellido;
 
 	@OneToMany(mappedBy = "repartidor")
+	@XmlTransient
 	private List<Pedido> pedidos;
 
 	public Repartidor() {
@@ -24,7 +26,6 @@ public class Repartidor {
 	public Repartidor(String nombre, String apellido, List<Pedido> pedidos) {
 		this.nombre = nombre;
 		this.apellido = apellido;
-		this.pedidos = pedidos;
 	}
 
 	public Long getId() {
