@@ -15,7 +15,7 @@ public class Producto {
 
 	private double precio;
 
-	private boolean activo = true;
+	private Boolean activo = true;
 
 	public Producto() {
 	}
@@ -52,11 +52,11 @@ public class Producto {
 		this.precio = precio;
 	}
 
-	public boolean isActivo() {
+	public Boolean isActivo() {
 		return activo;
 	}
 
-	public void setActivo(boolean activo) {
+	public void setActivo(Boolean activo) {
 		this.activo = activo;
 	}
 }
